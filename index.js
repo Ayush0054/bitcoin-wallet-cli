@@ -178,21 +178,21 @@ const API_KEY = "cf5bf695dd0d40e6b288b653115377b6"; // Replace with your actual 
 //   return address;
 // };
 const generateBIP44Addresses = async (walletName) => {
-  const url = `https://api.blockcypher.com/v1/btc/main/wallets/${walletName}/addresses/generate?token=${API_KEY}`;
+  // const url = `https://api.blockcypher.com/v1/bcy/test/wallets/${walletName}/addresses/generate?token=${API_KEY}`;
   //   const url = `https://api.blockcypher.com/v1/btc/test3/addrs`;
-  //   const url = `https://api.blockcypher.com/v1/btc/main/addrs?token=${API_KEY}`;
+    const url = `https://api.blockcypher.com/v1/bcy/test/addrs?token=${API_KEY}`;
 
   try {
     const response = await axios.post(url);
     // console.log("response", response);
-    console.log("response data", response.data);
+    console.log("response data", response.data.address);
     return response.data.address;
   } catch (error) {
     throw error;
   }
 };
-const walletName = "ayush5642s13aa";
-generateBIP44Addresses(walletName);
+// const walletName = "ayush";
+// generateBIP44Addresses(walletName);
 // Example usage
 // const walletName = "absa"; // Replace with the desired wallet name
 // generateBIP44Addresses(walletName)
@@ -243,38 +243,34 @@ generateBIP44Addresses(walletName);
 //     console.error(error);
 //   });
 
-const mnemonic = bip39.generateMnemonic();
-//   "loop rate robust salute faith regular amount audit cereal want motion version"; // Replace with your mnemonic
-// const API_KEY = 'your API key here'; // Replace with your BlockCypher API key
+// const mnemonic = bip39.generateMnemonic();
 
-const seed = bip39.mnemonicToSeedSync(mnemonic);
-const root = bip32.fromSeed(seed);
-const path = "m/44'/0'/0'/0/0"; // Use the desired path
-console.log("path", path);
-const addressNode = root.derivePath(`m/44'/0'/0'/0/0`);
-const publicKey = addressNode.publicKey;
-const address = bitcoin.payments.p2pkh({ pubkey: publicKey }).address;
-// const { address } = root.derivePath(path);
-console.log("address", address);
-// const wif = privateKey.toWIF();
+// const seed = bip39.mnemonicToSeedSync(mnemonic);
+// const root = bip32.fromSeed(seed);
+// const addressNode = root.derivePath(`m/44'/1'/0'/0/0`);
+// const publicKey = addressNode.publicKey;
+// const address = bitcoin.payments.p2pkh({ pubkey: publicKey }).address;
 
-const createNormalWallet = async (walletName, address) => {
-  const data = {
-    name: walletName,
-    address: address,
-  };
+// console.log("address", `["${address}"]`);
 
-  const url = `https://api.blockcypher.com/v1/btc/main/wallets?token=${API_KEY}`;
+// const createNormalWallet = async (walletName, address) => {
+//   const data = {
+//      name:walletName,
+//      addresses:[address]
+//   };
 
-  try {
-    const response = await axios.post(url, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
+//   const url = `https://api.blockcypher.com/v1/bcy/test/wallets?token=${API_KEY}`;
 
-// const walletName = "ayush5642s13aa"; // Replace with your desired wallet name
+//   try {
+//     const response = await axios.post(url, JSON.stringify(data));
+//     return response.data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// const walletName = "assfda"; // Replace with your desired wallet name
+// const address = generateBIP44Addresses(walletName);
 // createNormalWallet(walletName, address)
 //   .then((result) => {
 //     console.log("Imported Wallet:", result);
@@ -282,3 +278,47 @@ const createNormalWallet = async (walletName, address) => {
 //   .catch((error) => {
 //     console.error("Error:", error.message);
 //   });
+// Replace with your BlockCypher API key
+const walletName = 'ayush'; // Replace with the name of the wallet
+
+const getWalletTransactions = async (walletName) => {
+  const url = `https://api.blockcypher.com/v1/bcy/test/wallets/${walletName}/txs?token=${API_KEY}`;
+
+  try {
+    const response = await axios.get(url);
+    console.log("response", response);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const printTransactions = (transactions) => {
+  transactions.forEach((transaction) => {
+    console.log('Transaction ID:', transaction.txid);
+    console.log('Confirmations:', transaction.confirmations);
+    console.log('Received:', transaction.received);
+    console.log('Total Output Value:', transaction.total);
+    console.log('Inputs:');
+    transaction.inputs.forEach((input) => {
+      console.log('  Address:', input.addresses[0]);
+      console.log('  Value:', input.output_value);
+    });
+    console.log('Outputs:');
+    transaction.outputs.forEach((output) => {
+      console.log('  Address:', output.addresses[0]);
+      console.log('  Value:', output.value);
+    });
+    console.log('------------------------------------');
+  });
+};
+
+getWalletTransactions(walletName)
+  .then((transactions) => {
+    console.log('Bitcoin Transactions for Wallet:', walletName);
+    console.log('------------------------------------');
+    printTransactions(transactions);
+  })
+  .catch((error) => {
+    console.error('Error:', error.message);
+  });

@@ -19,9 +19,9 @@ if (!fs.existsSync(WALLET_DIR)) {
 }
 
 // API configuration
-const API_KEY = process.env.BLOCKCYPHER_API_KEY;
+const API_KEY = "4fa2584cbbce4a5dbd00c5dac8283dad";
 // const API_BASE_URL = "https://api.blockcypher.com/v1/btc/test3";
-const API_BASE_URL = `https://api.blockcypher.com/v1/btc/main/wallets/hd?token=cf5bf695dd0d40e6b288b653115377b6`;
+const API_BASE_URL = `https://api.blockcypher.com/v1/btc/test3/wallets/hd?token=cf5bf695dd0d40e6b288b653115377b6`;
 
 // Function to read/write wallets
 const getWalletPath = (walletName) => `${WALLET_DIR}/${walletName}.json`;
@@ -39,7 +39,7 @@ const loadWallet = (walletName) => {
 // Function to get wallet balance
 const getWalletBalance = async (address) => {
   const response = await axios.get(
-    `https://api.blockcypher.com/v1/btc/main/addrs/${address}/balance`
+    `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/balance`
     // https://api.blockcypher.com/v1/bcy/test/addrs/${address}/balance
   );
   return response.data.balance;
@@ -53,7 +53,7 @@ const listWallets = () => {
 
 // Function to generate an unused Bitcoin address
 const getUnusedAddress = async (walletName) => {
-  const url = `https://api.blockcypher.com/v1/btc/main/wallets/${walletName}/addresses/generate?token=${API_KEY}`;
+  const url = `https://api.blockcypher.com/v1/btc/test3/wallets/${walletName}/addresses/generate?token=${API_KEY}`;
 
   try {
     const response = await axios.post(url);
@@ -65,7 +65,7 @@ const getUnusedAddress = async (walletName) => {
   }
 };
 const getAddress = async () => {
-  const url = `https://api.blockcypher.com/v1/btc/main/addrs?token=${API_KEY}`;
+  const url = `https://api.blockcypher.com/v1/btc/test3/addrs?token=${API_KEY}`;
 
   try {
     const response = await axios.post(url);
@@ -76,36 +76,49 @@ const getAddress = async () => {
     throw error;
   }
 };
-
-const createNormalWallet = async (name, addresses) => {
-  console.log("addresses", addresses);
+const createNormalWallet = async (walletName, address) => {
+  console.log("address", address);
   const data = {
-    name: name,
-    address: addresses,
+    name: walletName,
+    addresses: [address],
   };
+  console.log(JSON.stringify(data));
+  const url = `https://api.blockcypher.com/v1/btc/test3/wallets?token=${API_KEY}`;
 
-  const response = await axios.post(
-    `https://api.blockcypher.com/v1/btc/main/wallets?token=${API_KEY}`,
-    data
-  );
-
-  return response.data;
+  try {
+    const response = await axios.post(url, JSON.stringify(data));
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
-
 program
   .command("create <walletName>")
   .description("Create a new BIP39 wallet")
   .action(async (walletName) => {
     const mnemonic = bip39.generateMnemonic();
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const root = bip32.fromSeed(seed,bitcoin.networks.testnet);
+    const addressNode = root.derivePath(`m/44'/1'/0'/1/0`);
+    const publicKey = addressNode.publicKey;
+    const address = bitcoin.payments.p2pkh({ pubkey: publicKey ,network: bitcoin.networks.testnet}).address;
     saveWallet(walletName, mnemonic);
-    console.log(`Wallet '${walletName}' created.`);
+    // const address = await getAddress();
+    createNormalWallet(walletName, address);
+    console.log(`Wallet '${walletName}' , '${address}' created.`);
   });
 
 program
   .command("import <walletName> <mnemonic>")
   .description("Import a wallet using a BIP39 mnemonic")
   .action((walletName, mnemonic) => {
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const root = bip32.fromSeed(seed);
+    const addressNode = root.derivePath(`m/44'/1'/0'/0/0`);
+    const publicKey = addressNode.publicKey;
+    const address = bitcoin.payments.p2pkh({ pubkey: publicKey }).address;
     saveWallet(walletName, mnemonic);
+    createNormalWallet(walletName, address);
     console.log(`Wallet '${walletName}' imported.`);
   });
 
@@ -122,8 +135,7 @@ program
   .command("balance <walletName>")
   .description("Get Bitcoin balance of a wallet")
   .action(async (walletName) => {
-    const mnemonic = loadWallet(walletName);
-    const address = await getUnusedAddress();
+    const address = await getUnusedAddress(walletName);
     const balance = await getWalletBalance(address);
     console.log(`Balance of wallet '${walletName}': ${balance} satoshis`);
   });
@@ -132,7 +144,7 @@ program
   .command("unused-address <walletName>")
   .description("Generate an unused Bitcoin address for a wallet")
   .action(async (walletName) => {
-    const mnemonic = loadWallet(walletName);
+    // const mnemonic = loadWallet(walletName);
     const address = await getUnusedAddress(walletName);
     console.log(`Unused address for wallet '${walletName}': ${address}`);
   });
