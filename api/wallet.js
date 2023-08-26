@@ -18,7 +18,7 @@ if (!fs.existsSync(WALLET_DIR)) {
   fs.mkdirSync(WALLET_DIR);
 }
 
-const API_KEY = "4fa2584cbbce4a5dbd00c5dac8283dad";
+const API_KEY = process.env.BLOCKCYPHER_API_KEY;
 
 
 const getWalletPath = (walletName) => `${WALLET_DIR}/${walletName}.json`;

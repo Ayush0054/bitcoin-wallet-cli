@@ -1,5 +1,4 @@
 const fs = require("fs");
-const axios = require("axios");
 const ecc = require("tiny-secp256k1");
 const { BIP32Factory } = require("bip32");
 const bip32 = BIP32Factory(ecc);

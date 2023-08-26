@@ -9,7 +9,6 @@ const { Command } = require("commander");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const API_KEY = "4fa2584cbbce4a5dbd00c5dac8283dad";
   exports.getTransactionInfo = async (address) => {
     const url = `https://api.blockcypher.com/v1/btc/test3/addrs/${address}`;
     
