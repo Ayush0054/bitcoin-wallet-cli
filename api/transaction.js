@@ -1,11 +1,5 @@
 const fs = require("fs");
 const axios = require("axios");
-const ecc = require("tiny-secp256k1");
-const { BIP32Factory } = require("bip32");
-const bip32 = BIP32Factory(ecc);
-const bip39 = require("bip39");
-const bitcoin = require("bitcoinjs-lib");
-const { Command } = require("commander");
 const dotenv = require("dotenv");
 dotenv.config();
 

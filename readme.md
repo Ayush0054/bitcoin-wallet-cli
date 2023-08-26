@@ -18,7 +18,7 @@
 
 &nbsp;
 
-| Method                     |  Description                                      | 
+| Commands                   |  Description                                      | 
 | ---------------------------| --------------------------------------------------|
 |create walletname           |  Create a new BIP39 wallet.                       |
 |import walletName "mnemonic"|  Import a wallet using a BIP39 mnemonic.          | 
